@@ -1,0 +1,54 @@
+services:
+  app:
+    container_name: holidays-service
+    build: 
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      RESET_PASSWORD_TOKEN_SECRET: ${RESET_PASSWORD_TOKEN_SECRET}
+      VERIFICATION_TOKEN_SECRET: ${VERIFICATION_TOKEN_SECRET}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./src/usholidays
+          target: /app
+        - action: rebuild
+          path: ./requirements.lock
+  
+  db:
+    image: postgres:alpine
+    container_name: test-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  adminer:
+    container_name: test-adminer
+    image: adminer
+    ports:
+      - "8082:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
