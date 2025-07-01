@@ -129,9 +129,9 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-rsa.pem
-rsa.pub
-.env
+# rsa.pem
+# rsa.pub
+# .env
 test.env
 .venv
 env/
